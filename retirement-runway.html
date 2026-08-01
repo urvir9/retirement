@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Runway — 25-Year Money Survival Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#12161c;
+    --panel:#1b222b;
+    --panel2:#212a34;
+    --line:#2b3542;
+    --paper:#f3efe6;
+    --paper-dim:#e5decd;
+    --gold:#c99a3e;
+    --teal:#3e9c82;
+    --rust:#c4553a;
+    --hi:#f3efe9;
+    --lo:#93a0ad;
+    --lo2:#67717c;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ink);
+    color:var(--hi);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .display{font-family:'Fraunces',serif;}
+
+  a{color:inherit;}
+
+  /* ===== NAV ===== */
+  .nav{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:22px clamp(20px,5vw,64px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{
+    display:flex;align-items:baseline;gap:10px;
+    font-family:'Fraunces',serif; font-weight:600; font-size:20px; letter-spacing:0.02em;
+  }
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block;transform:translateY(-2px);}
+  .nav-sub{color:var(--lo);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;}
+
+  /* ===== HERO ===== */
+  .hero{
+    padding:56px clamp(20px,5vw,64px) 24px;
+    max-width:1320px;margin:0 auto;
+  }
+  .hero h1{
+    font-family:'Fraunces',serif;
+    font-weight:500;
+    font-size:clamp(32px,4.4vw,54px);
+    line-height:1.08;
+    max-width:820px;
+    margin:0 0 14px;
+  }
+  .hero h1 em{font-style:italic;color:var(--gold);}
+  .hero p.lead{
+    color:var(--lo);
+    font-size:16px;
+    max-width:560px;
+    line-height:1.55;
+    margin:0 0 36px;
+  }
+
+  /* ===== RUNWAY VISUAL ===== */
+  .runway-wrap{
+    background:var(--paper);
+    border-radius:14px;
+    padding:28px clamp(16px,3vw,40px) 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .runway-top{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    color:#3a3530;margin-bottom:18px;flex-wrap:wrap;gap:16px;
+  }
+  .runway-metric-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6b6152;margin-bottom:4px;}
+  .runway-metric-value{font-family:'Fraunces',serif;font-size:clamp(28px,3.6vw,44px);font-weight:600;line-height:1;}
+  .runway-metric-value.ok{color:var(--teal);}
+  .runway-metric-value.warn{color:var(--rust);}
+  .runway-sub{font-size:13px;color:#6b6152;margin-top:6px;}
+
+  svg#runwaySvg{display:block;width:100%;height:auto;}
+  .rw-strip{fill:#e7e0cd;}
+  .rw-line{fill:none;stroke:#2f2a22;stroke-width:2;}
+  .rw-fill{fill:url(#fillGrad);opacity:0.55;}
+  .rw-marker-line{stroke:var(--rust);stroke-width:1.5;stroke-dasharray:4 3;}
+  .rw-tick{stroke:#c9bf9f;stroke-width:1;}
+  .rw-tick-label{font-family:'IBM Plex Mono',monospace;font-size:11px;fill:#8a7f6a;}
+  .rw-lights circle{fill:var(--gold);}
+
+  /* ===== LAYOUT GRID ===== */
+  .grid{
+    max-width:1320px;margin:0 auto;
+    padding:40px clamp(20px,5vw,64px) 80px;
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:24px;
+    align-items:start;
+  }
+  @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:24px;
+  }
+  .panel + .panel{margin-top:24px;}
+  .panel h2{
+    font-family:'Fraunces',serif;font-weight:500;font-size:18px;margin:0 0 4px;
+  }
+  .panel .h-sub{color:var(--lo);font-size:12.5px;margin:0 0 20px;line-height:1.5;}
+
+  .eyebrow{
+    font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);
+    margin-bottom:6px;font-weight:600;
+  }
+
+  /* ===== FORM ===== */
+  .field{margin-bottom:16px;}
+  .field label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;color:var(--lo);margin-bottom:6px;
+  }
+  .field label .val{font-family:'IBM Plex Mono',monospace;color:var(--hi);font-size:13px;}
+  .field input[type=range]{
+    width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;
+    background:var(--line);outline:none;
+  }
+  .field input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--gold);cursor:pointer;border:2px solid var(--ink);
+  }
+  .field input[type=number], .field input[type=text]{
+    width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:7px;
+    color:var(--hi);font-family:'IBM Plex Mono',monospace;font-size:13.5px;padding:9px 11px;
+  }
+  .field input[type=number]:focus, .field input[type=text]:focus{outline:1px solid var(--gold);border-color:var(--gold);}
+
+  .asset-row{
+    display:grid;grid-template-columns:1fr 92px 64px;gap:8px;align-items:center;margin-bottom:10px;
+  }
+  .asset-row .name{font-size:12.5px;color:var(--hi);display:flex;align-items:center;gap:7px;}
+  .swatch{width:9px;height:9px;border-radius:2px;flex:none;}
+  .asset-row input{
+    background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--hi);
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;padding:7px 8px;width:100%;
+  }
+  .divider{border:none;border-top:1px solid var(--line);margin:18px 0;}
+
+  .total-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:10px;border-top:1px solid var(--line);margin-top:4px;
+  }
+  .total-row .lbl{font-size:12.5px;color:var(--lo);text-transform:uppercase;letter-spacing:0.06em;}
+  .total-row .amt{font-family:'IBM Plex Mono',monospace;font-size:16px;color:var(--gold);}
+
+  /* ===== RESULT CARDS ===== */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+  @media (max-width:700px){.stat-grid{grid-template-columns:1fr 1fr;}}
+  .stat{
+    background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:16px 16px 14px;
+  }
+  .stat .lbl{font-size:11px;color:var(--lo);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
+  .stat .val{font-family:'IBM Plex Mono',monospace;font-size:20px;color:var(--hi);}
+  .stat .val.gold{color:var(--gold);}
+  .stat .val.teal{color:var(--teal);}
+  .stat .val.rust{color:var(--rust);}
+
+  .chart-box{position:relative;height:320px;margin-bottom:8px;}
+
+  .verdict{
+    border-radius:10px;padding:16px 18px;margin-top:6px;
+    display:flex;gap:14px;align-items:flex-start;
+    border:1px solid var(--line);
+  }
+  .verdict.ok{background:rgba(62,156,130,0.09);border-color:rgba(62,156,130,0.35);}
+  .verdict.warn{background:rgba(196,85,58,0.09);border-color:rgba(196,85,58,0.35);}
+  .verdict .icon{font-family:'Fraunces',serif;font-size:22px;line-height:1;margin-top:1px;}
+  .verdict .txt strong{display:block;font-size:14.5px;margin-bottom:3px;}
+  .verdict .txt span{font-size:13px;color:var(--lo);line-height:1.5;}
+
+  .two-col{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;}
+  @media (max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+  .donut-box{position:relative;height:230px;}
+  .legend{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+  .legend-item{display:flex;justify-content:space-between;font-size:12.5px;}
+  .legend-item .l{display:flex;align-items:center;gap:8px;color:var(--lo);}
+  .legend-item .v{font-family:'IBM Plex Mono',monospace;color:var(--hi);}
+
+  table.yeartable{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  table.yeartable th{
+    text-align:right;color:var(--lo);font-weight:500;font-size:10.5px;text-transform:uppercase;
+    letter-spacing:0.05em;padding:8px 10px;border-bottom:1px solid var(--line);
+  }
+  table.yeartable th:first-child, table.yeartable td:first-child{text-align:left;}
+  table.yeartable td{padding:7px 10px;text-align:right;border-bottom:1px solid rgba(43,53,66,0.5);color:var(--hi);}
+  table.yeartable tr.depleted td{color:var(--rust);}
+  .table-wrap{max-height:280px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;}
+  .table-wrap::-webkit-scrollbar{width:8px;}
+  .table-wrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+
+  .toggle-btn{
+    background:none;border:1px solid var(--line);color:var(--lo);font-size:12px;
+    padding:8px 14px;border-radius:7px;cursor:pointer;font-family:'Inter',sans-serif;
+    margin-top:14px;
+  }
+  .toggle-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+  .assumption-note{
+    font-size:11.5px;color:var(--lo2);line-height:1.6;margin-top:16px;padding-top:14px;
+    border-top:1px solid var(--line);
+  }
+
+  footer{
+    max-width:1320px;margin:0 auto;padding:0 clamp(20px,5vw,64px) 60px;
+    color:var(--lo2);font-size:12px;line-height:1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="brand"><span class="dot"></span>RUNWAY</div>
+  <div class="nav-sub">Retirement Survival Planner</div>
+</div>
+
+<div class="hero">
+  <h1>If today were your <em>last paycheck</em>,<br>how far would your money fly?</h1>
+  <p class="lead">A working model for the "what if I stopped tomorrow" question — built for the 25 years after you decide to stop, not just the day you retire.</p>
+
+  <div class="runway-wrap">
+    <div class="runway-top">
+      <div>
+        <div class="runway-metric-label">Runway status</div>
+        <div class="runway-metric-value" id="verdictHeadline">—</div>
+        <div class="runway-sub" id="verdictSub">Calculating…</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="runway-metric-label">Corpus today</div>
+        <div class="runway-metric-value" id="corpusToday" style="font-size:clamp(20px,2.4vw,28px);">—</div>
+        <div class="runway-sub" id="allocSub"></div>
+      </div>
+    </div>
+    <svg id="runwaySvg" viewBox="0 0 1000 220" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c99a3e" stop-opacity="0.55"/>
+          <stop offset="100%" stop-color="#c99a3e" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect class="rw-strip" x="0" y="0" width="1000" height="220" rx="6"></rect>
+      <g id="ticks"></g>
+      <path id="rwFillPath" class="rw-fill"></path>
+      <path id="rwLinePath" class="rw-line"></path>
+      <line id="rwMarker" class="rw-marker-line" x1="0" y1="0" x2="0" y2="220"></line>
+      <g id="rwLights" class="rw-lights"></g>
+    </svg>
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- LEFT: INPUTS -->
+  <div>
+    <div class="panel">
+      <div class="eyebrow">Step 1</div>
+      <h2>Where your money sits today</h2>
+      <p class="h-sub">Enter current balances across your holdings. This is your day-zero corpus.</p>
+
+      <div id="assetRows"></div>
+
+      <div class="total-row">
+        <div class="lbl">Total corpus</div>
+        <div class="amt" id="totalCorpus">₹0</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="eyebrow">Step 2</div>
+      <h2>Monthly cash needs</h2>
+      <p class="h-sub">What it costs to run your life today, in today's rupees.</p>
+
+      <div class="field">
+        <label>Monthly essential expenses <span class="val" id="expVal"></span></label>
+        <input type="range" id="expenseSlider" min="20000" max="400000" step="5000" value="90000">
+      </div>
+      <div class="field">
+        <label>Other monthly income (rent, pension, spouse) <span class="val" id="incVal"></span></label>
+        <input type="range" id="incomeSlider" min="0" max="200000" step="2000" value="0">
+      </div>
+      <div class="field">
+        <label>Your age today <span class="val" id="ageVal"></span></label>
+        <input type="range" id="ageSlider" min="40" max="65" step="1" value="49">
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="eyebrow">Step 3</div>
+      <h2>Assumptions</h2>
+      <p class="h-sub">Expected annual return per bucket, and inflation eating into your expenses.</p>
+
+      <div class="field">
+        <label>Equity (MF / stocks) return <span class="val" id="eqRetVal"></span></label>
+        <input type="range" id="eqRetSlider" min="4" max="16" step="0.5" value="10">
+      </div>
+      <div class="field">
+        <label>Debt (FD / PF / bonds) return <span class="val" id="dbRetVal"></span></label>
+        <input type="range" id="dbRetSlider" min="3" max="10" step="0.5" value="7">
+      </div>
+      <div class="field">
+        <label>Gold return <span class="val" id="goldRetVal"></span></label>
+        <input type="range" id="goldRetSlider" min="2" max="12" step="0.5" value="8">
+      </div>
+      <div class="field">
+        <label>Cash / liquid return <span class="val" id="cashRetVal"></span></label>
+        <input type="range" id="cashRetSlider" min="2" max="7" step="0.5" value="4">
+      </div>
+      <hr class="divider">
+      <div class="field">
+        <label>Inflation (expenses grow every year) <span class="val" id="inflVal"></span></label>
+        <input type="range" id="inflSlider" min="3" max="10" step="0.5" value="6">
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: RESULTS -->
+  <div>
+    <div class="panel">
+      <div class="eyebrow">The 25-year test</div>
+      <h2>Can this corpus outlive 25 years without a salary?</h2>
+      <p class="h-sub">Every year, your expenses (inflated) are withdrawn first, then the remaining balance grows at your blended portfolio return.</p>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="lbl">Runway length</div>
+          <div class="val gold" id="statRunway">—</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Year-1 withdrawal rate</div>
+          <div class="val" id="statSWR">—</div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Balance at year 25</div>
+          <div class="val" id="statEnd">—</div>
+        </div>
+      </div>
+
+      <div class="chart-box"><canvas id="corpusChart"></canvas></div>
+
+      <div class="verdict" id="verdictBox">
+        <div class="icon">◆</div>
+        <div class="txt"><strong id="vTitle">Calculating…</strong><span id="vBody"></span></div>
+      </div>
+
+      <button class="toggle-btn" id="toggleTable">Show year-by-year ledger ▾</button>
+      <div class="table-wrap" id="tableWrap" style="display:none;margin-top:12px;">
+        <table class="yeartable">
+          <thead><tr><th>Year</th><th>Age</th><th>Opening</th><th>Withdrawal</th><th>Closing</th></tr></thead>
+          <tbody id="yearBody"></tbody>
+        </table>
+      </div>
+
+      <div class="assumption-note">
+        Model assumptions: allocation weights are held constant (implying periodic rebalancing back to today's mix); expenses and other income both grow at the inflation rate you set; withdrawals happen at the start of each year, growth is applied to what's left. This is a planning aid, not investment or tax advice — actual sequencing, taxes (LTCG/STCG), and market volatility will change the real path.
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="two-col">
+        <div>
+          <div class="eyebrow">Composition</div>
+          <h2>Where it's parked right now</h2>
+          <div class="donut-box"><canvas id="allocChart"></canvas></div>
+        </div>
+        <div>
+          <div class="eyebrow">&nbsp;</div>
+          <h2>By bucket</h2>
+          <div class="legend" id="allocLegend"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  RUNWAY is a planning calculator, built to think through a single question — not a substitute for a certified financial or tax advisor. Figures are illustrative and depend entirely on the assumptions you set above.
+</footer>
+
+<script>
+const ASSET_DEFS = [
+  {key:'equity', name:'Equity MF / Stocks', color:'#c99a3e', amount:4500000, retId:'eqRetSlider'},
+  {key:'debt',   name:'Debt MF / FD / PF',  color:'#3e9c82', amount:3500000, retId:'dbRetSlider'},
+  {key:'gold',   name:'Gold',               color:'#8f8672', amount:800000,  retId:'goldRetSlider'},
+  {key:'cash',   name:'Cash / Liquid',      color:'#6f8ea6', amount:700000,  retId:'cashRetSlider'},
+];
+
+const assetRowsEl = document.getElementById('assetRows');
+ASSET_DEFS.forEach(a=>{
+  const row = document.createElement('div');
+  row.className='asset-row';
+  row.innerHTML = `
+    <div class="name"><span class="swatch" style="background:${a.color}"></span>${a.name}</div>
+    <input type="number" id="amt_${a.key}" value="${a.amount}" step="50000">
+    <input type="text" value="₹L" disabled style="opacity:0.4;text-align:center;">
+  `;
+  assetRowsEl.appendChild(row);
+});
+
+function fmtINR(n, opts={}){
+  n = Math.round(n);
+  const neg = n<0; n=Math.abs(n);
+  let s;
+  if(!opts.compact){
+    s = n.toLocaleString('en-IN');
+  } else {
+    if(n>=10000000) s=(n/10000000).toFixed(2)+' Cr';
+    else if(n>=100000) s=(n/100000).toFixed(2)+' L';
+    else s=n.toLocaleString('en-IN');
+  }
+  return (neg?'-':'')+'₹'+s;
+}
+
+function readInputs(){
+  const assets = ASSET_DEFS.map(a=>({
+    ...a,
+    amount: parseFloat(document.getElementById('amt_'+a.key).value)||0,
+    ret: parseFloat(document.getElementById(a.retId).value)/100
+  }));
+  const total = assets.reduce((s,a)=>s+a.amount,0);
+  const blendedReturn = total>0 ? assets.reduce((s,a)=>s+a.amount*a.ret,0)/total : 0;
+  return {
+    assets, total, blendedReturn,
+    expense: parseFloat(document.getElementById('expenseSlider').value),
+    income: parseFloat(document.getElementById('incomeSlider').value),
+    age: parseFloat(document.getElementById('ageSlider').value),
+    inflation: parseFloat(document.getElementById('inflSlider').value)/100,
+  };
+}
+
+function project(inputs, years=25){
+  const rows=[];
+  let corpus = inputs.total;
+  let depletedAt = null;
+  for(let y=1;y<=years;y++){
+    const infFactor = Math.pow(1+inputs.inflation, y-1);
+    const annualExpense = inputs.expense*12*infFactor;
+    const annualIncome = inputs.income*12*infFactor;
+    const netWithdrawal = Math.max(0, annualExpense-annualIncome);
+    const opening = corpus;
+    let afterWithdrawal = opening - netWithdrawal;
+    let closing;
+    let dep=false;
+    if(afterWithdrawal<=0 && depletedAt===null){
+      depletedAt = y;
+      afterWithdrawal = Math.max(afterWithdrawal,0);
+      closing = 0;
+      dep=true;
+    } else if(depletedAt!==null){
+      afterWithdrawal=0; closing=0; dep=true;
+    } else {
+      closing = afterWithdrawal*(1+inputs.blendedReturn);
+    }
+    rows.push({year:y, age:inputs.age+y, opening, withdrawal:netWithdrawal, closing, depleted:dep});
+    corpus = closing;
+  }
+  return {rows, depletedAt};
+}
+
+let corpusChart, allocChart;
+
+function render(){
+  const inputs = readInputs();
+  const {rows, depletedAt} = project(inputs,25);
+
+  // totals
+  document.getElementById('totalCorpus').textContent = fmtINR(inputs.total, {compact:true});
+  document.getElementById('corpusToday').textContent = fmtINR(inputs.total, {compact:true});
+  document.getElementById('expVal').textContent = fmtINR(inputs.expense);
+  document.getElementById('incVal').textContent = fmtINR(inputs.income);
+  document.getElementById('ageVal').textContent = inputs.age+' yrs';
+  document.getElementById('eqRetVal').textContent = document.getElementById('eqRetSlider').value+'%';
+  document.getElementById('dbRetVal').textContent = document.getElementById('dbRetSlider').value+'%';
+  document.getElementById('goldRetVal').textContent = document.getElementById('goldRetSlider').value+'%';
+  document.getElementById('cashRetVal').textContent = document.getElementById('cashRetSlider').value+'%';
+  document.getElementById('inflVal').textContent = document.getElementById('inflSlider').value+'%';
+  document.getElementById('allocSub').textContent = 'Blended return ≈ '+(inputs.blendedReturn*100).toFixed(1)+'%';
+
+  const runwayYears = depletedAt ? depletedAt-1 : 25;
+  const swr = inputs.total>0 ? ((inputs.expense*12-inputs.income*12)/inputs.total*100) : 0;
+  document.getElementById('statRunway').textContent = depletedAt ? runwayYears+' yrs' : '25+ yrs';
+  document.getElementById('statSWR').textContent = swr.toFixed(1)+'%';
+  document.getElementById('statEnd').textContent = depletedAt ? '₹0' : fmtINR(rows[24].closing,{compact:true});
+
+  // headline + verdict
+  const headline = document.getElementById('verdictHeadline');
+  const sub = document.getElementById('verdictSub');
+  const vBox = document.getElementById('verdictBox');
+  const vTitle = document.getElementById('vTitle');
+  const vBody = document.getElementById('vBody');
+  const icon = vBox.querySelector('.icon');
+
+  if(depletedAt){
+    headline.textContent = 'Runs out — Year '+depletedAt;
+    headline.className='runway-metric-value warn';
+    sub.textContent = 'Corpus depletes at age '+ (inputs.age+depletedAt) +', '+(25-depletedAt+1)+' year(s) short of the 25-year goal.';
+    vBox.className='verdict warn'; icon.textContent='▲';
+    vTitle.textContent = 'This corpus falls short.';
+    vBody.textContent = 'At current spend and returns, the money runs out around age '+(inputs.age+depletedAt)+'. To extend the runway: trim monthly expenses, add other income, shift the mix toward higher-return assets, or grow the corpus before stepping away from a salary.';
+  } else {
+    headline.textContent = 'Runway clear — 25 yrs';
+    headline.className='runway-metric-value ok';
+    sub.textContent = 'Closing balance at age '+(inputs.age+25)+': '+fmtINR(rows[24].closing,{compact:true});
+    vBox.className='verdict ok'; icon.textContent='●';
+    vTitle.textContent = 'This corpus survives the full 25 years.';
+    vBody.textContent = 'At current spend, income and blended returns, the balance not only lasts — it closes at '+fmtINR(rows[24].closing,{compact:true})+' by age '+(inputs.age+25)+'. Treat this as a floor, not a guarantee: sequence-of-returns risk and real-world volatility aren\'t modeled here.';
+  }
+
+  // runway svg
+  drawRunwaySvg(rows, inputs, depletedAt);
+
+  // corpus chart
+  const labels = rows.map(r=>'Age '+r.age);
+  const data = rows.map(r=>Math.round(r.closing));
+  if(corpusChart) corpusChart.destroy();
+  corpusChart = new Chart(document.getElementById('corpusChart'), {
+    type:'line',
+    data:{labels, datasets:[{
+      label:'Corpus balance',
+      data,
+      borderColor: depletedAt ? '#c4553a' : '#3e9c82',
+      backgroundColor: depletedAt ? 'rgba(196,85,58,0.12)' : 'rgba(62,156,130,0.12)',
+      fill:true, tension:0.3, pointRadius:0, borderWidth:2,
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>fmtINR(ctx.parsed.y,{compact:true})}}},
+      scales:{
+        x:{ticks:{color:'#67717c', font:{family:'IBM Plex Mono',size:10}, maxTicksLimit:8}, grid:{color:'#2b3542'}},
+        y:{ticks:{color:'#67717c', font:{family:'IBM Plex Mono',size:10}, callback:(v)=>fmtINR(v,{compact:true})}, grid:{color:'#2b3542'}}
+      }
+    }
+  });
+
+  // allocation donut
+  if(allocChart) allocChart.destroy();
+  allocChart = new Chart(document.getElementById('allocChart'), {
+    type:'doughnut',
+    data:{
+      labels: inputs.assets.map(a=>a.name),
+      datasets:[{data:inputs.assets.map(a=>a.amount), backgroundColor:inputs.assets.map(a=>a.color), borderColor:'#1b222b', borderWidth:3}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+fmtINR(ctx.parsed,{compact:true})}}}, cutout:'68%'}
+  });
+  const legendEl = document.getElementById('allocLegend');
+  legendEl.innerHTML='';
+  inputs.assets.forEach(a=>{
+    const pct = inputs.total>0 ? (a.amount/inputs.total*100).toFixed(0) : 0;
+    const div = document.createElement('div');
+    div.className='legend-item';
+    div.innerHTML = `<span class="l"><span class="swatch" style="background:${a.color}"></span>${a.name}</span><span class="v">${pct}%</span>`;
+    legendEl.appendChild(div);
+  });
+
+  // year table
+  const tbody = document.getElementById('yearBody');
+  tbody.innerHTML='';
+  rows.forEach(r=>{
+    const tr = document.createElement('tr');
+    if(r.depleted) tr.className='depleted';
+    tr.innerHTML = `<td>Y${r.year}</td><td>${r.age}</td><td>${fmtINR(r.opening,{compact:true})}</td><td>${fmtINR(r.withdrawal,{compact:true})}</td><td>${fmtINR(r.closing,{compact:true})}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function drawRunwaySvg(rows, inputs, depletedAt){
+  const W=1000, H=220, padL=40, padR=20, padT=20, padB=30;
+  const innerW = W-padL-padR, innerH = H-padT-padB;
+  const maxVal = Math.max(inputs.total, ...rows.map(r=>r.closing), 1);
+  const n = rows.length;
+  const xFor = i => padL + (innerW*i/(n)); // i=0..n
+  const yFor = v => padT + innerH - (innerH*v/maxVal);
+
+  const pts = [ [xFor(0), yFor(inputs.total)] ].concat(rows.map((r,i)=>[xFor(i+1), yFor(r.closing)]));
+  const linePath = pts.map((p,i)=> (i===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const fillPath = linePath + ` L${xFor(n).toFixed(1)},${(H-padB).toFixed(1)} L${xFor(0).toFixed(1)},${(H-padB).toFixed(1)} Z`;
+
+  document.getElementById('rwLinePath').setAttribute('d', linePath);
+  document.getElementById('rwFillPath').setAttribute('d', fillPath);
+
+  // ticks every 5 years
+  const ticksG = document.getElementById('ticks');
+  ticksG.innerHTML='';
+  for(let i=0;i<=n;i+=5){
+    const x = xFor(i);
+    const tick = document.createElementNS('http://www.w3.org/2000/svg','line');
+    tick.setAttribute('x1',x); tick.setAttribute('x2',x);
+    tick.setAttribute('y1',padT); tick.setAttribute('y2',H-padB);
+    tick.setAttribute('class','rw-tick');
+    ticksG.appendChild(tick);
+    const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+    label.setAttribute('x',x); label.setAttribute('y',H-10);
+    label.setAttribute('class','rw-tick-label'); label.setAttribute('text-anchor','middle');
+    label.textContent = 'Age '+(inputs.age+i);
+    ticksG.appendChild(label);
+  }
+
+  // marker at depletion (or none)
+  const marker = document.getElementById('rwMarker');
+  if(depletedAt){
+    const x = xFor(depletedAt);
+    marker.setAttribute('x1',x); marker.setAttribute('x2',x);
+    marker.setAttribute('y1',padT); marker.setAttribute('y2',H-padB);
+    marker.style.display='block';
+  } else {
+    marker.style.display='none';
+  }
+
+  // runway edge lights along bottom
+  const lightsG = document.getElementById('rwLights');
+  lightsG.innerHTML='';
+  for(let i=0;i<=n;i++){
+    const x = xFor(i);
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',x); c.setAttribute('cy',H-padB+14); c.setAttribute('r', i===depletedAt?3.2:1.6);
+    if(i===depletedAt) c.setAttribute('fill','#c4553a');
+    lightsG.appendChild(c);
+  }
+}
+
+// wire up events
+['expenseSlider','incomeSlider','ageSlider','eqRetSlider','dbRetSlider','goldRetSlider','cashRetSlider','inflSlider']
+  .forEach(id=>document.getElementById(id).addEventListener('input', render));
+ASSET_DEFS.forEach(a=>document.getElementById('amt_'+a.key).addEventListener('input', render));
+
+document.getElementById('toggleTable').addEventListener('click', function(){
+  const w = document.getElementById('tableWrap');
+  const showing = w.style.display==='block';
+  w.style.display = showing?'none':'block';
+  this.textContent = showing ? 'Show year-by-year ledger ▾' : 'Hide year-by-year ledger ▴';
+});
+
+render();
+</script>
+
+</body>
+</html>
